@@ -1,0 +1,112 @@
+<!-- CANVAS2D SHIM BELOW - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!DOCTYPE html>
+<head>
+  <title>demo ~ js1024</title>
+  <meta name="author" content="author" />
+  <meta name="description" content="short_description" />
+  <meta name="title" content="demo" />
+  <meta charset="utf-8" />
+</head>
+<body id="b">
+  <canvas id="a"></canvas>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    #a {
+      position: relative;
+      display: block;
+    }
+    .play {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      font-size: 30px;
+      font-family: arial, sans-serif;
+      background: #f3f4f5;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+    }
+  </style>
+
+  <script>
+    // Entry configuration
+    // ===================
+
+    var title = "Causticonek";
+
+    // Shim setup and polyfills (do not edit)
+    // ======================================
+
+    a.width = innerWidth;
+    a.height = innerHeight;
+
+    c = a.getContext("2d");
+
+    d = document;
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    window.requestAnimationFrame =
+      window.requestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.msRequestAnimationFrame;
+    a.requestPointerLock =
+      a.requestPointerLock ||
+      a.mozRequestPointerLock ||
+      a.webkitRequestPointerLock;
+    navigator.getUserMedia =
+      navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.msGetUserMedia;
+    if (typeof OscillatorNode !== "undefined" && OscillatorNode.prototype) {
+      OscillatorNode.prototype.start =
+        OscillatorNode.prototype.start || OscillatorNode.prototype.noteOn;
+      OscillatorNode.prototype.stop =
+        OscillatorNode.prototype.stop || OscillatorNode.prototype.noteOff;
+    }
+
+    // Add a start button if sound is present in the code
+    onload = () => {
+      var entry_code = entry.innerText;
+      var has_sound = false;
+      if (entry_code.includes("eval")) {
+        try {
+          eval(
+            entry_code.replace(/eval\(/g, "throw(").replace(/eval\`/g, "throw`")
+          );
+        } catch (e) {
+          entry_code = e;
+        }
+      }
+      if (
+        entry_code.includes("AudioContext") ||
+        entry_code.includes("Oscillator") ||
+        entry_code.includes("speak") ||
+        entry_code.includes("play") ||
+        entry_code.includes("autoplay")
+      ) {
+        b.insertAdjacentHTML(
+          "beforeEnd",
+          "<button class='play' onclick='console.log(entry.innerText);eval(entry.innerText);this.remove()'>PLAY</button>"
+        );
+      } else {
+        eval(entry.innerText);
+      }
+    };
+
+    console.log(
+      a, // canvas
+      b, // body
+      c, // 2D canvas context
+      d // document
+    );
+  </script>
+  <script type="text" id="entry">
+    for(_='/85)*"=>!=t!Z(1Y.tX2*W.5V*eUy,T0,Su(R=g(Re,Qt,P=q(r,PO/128-1Nlet {z==Math.s]=A.--;)for(<0?);n(d(z,},{x:(,z:,y:=tyx),a+1Vy:-,o[t+	256)m(n=Rn,I(tImageData(return-64*y.yerz})!(t!e,r,Sa=SlqrPnin,f=c.geSS,o=f.data,ut-ey-rx-z}dtU+y*r+x*me)!tUyUxU}gZP1/l(Pt)sZt0:Pq=(PTx)!e=RPyr=e,xt.r-e,e)+r*r; z<0||(r-l(zh=RTx,-z{t:h:h,n:Rh,tid:t.r}DZ{r=.75+az:5,r:1e=W1Wa)9y=;yx=;xt=4*(x+*yA=I000gxNyN1}V+x"y"Vo[tx	1y	2z	3]=255}c.puf,S0a+=.001*(t-zPrequestAnimationFrame(D)I=(Py)!xOyi=9;ix,c=qi%3*4-44+a+i%3+i/3z:4+i/3*4,r:5Pyx=zXc:cX<0||zX<=cX?z:c;var c;if(xX>0){let{h:Pn:z}=x,iQt{t:a}Oiif(a=a<-1?1:a.2+.8*-a:.2,a<1)yQrx=RPryRRr,T-xtx-=V;i=x-x:x;a+=sY-l(z)))**i*i}n=t.x+59t.z+5sYWi,z)*a)ifY==x.id)x=yPg(RTWx))-.2)e=2/3,r=Re*-x-lY-eU*Y-x*x)T-e)RPr,-.1r-V))} n}3Wy.x+192196255}};D(0)})()';G=/[-N-Z!"]/.exec(_);)with(_.split(G))_=join(shift());eval(_)
+  </script>
+</body>

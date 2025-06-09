@@ -1,153 +1,132 @@
 ((_) => {
-  let then = 0,
-    scenel,
-    sphere,
-    angle = 0;
+  let th = 0,
+    sl,
+    sp,
+    a = 0;
 
   let s = Math.sqrt;
   let z = Math.sin;
 
-  let context = c.getContext("2d");
+  let ct = c.getContext("2d");
 
-  let imageData = context.getImageData(0, 0, 256, 256);
-  let pixels = imageData.data;
+  let id = ct.getImageData(0, 0, 256, 256);
+  let px = id.data;
 
-  let sub = ({ x, y, z }, { x: u, y: v, z: w }) => ({
-    x: x - u,
-    y: y - v,
-    z: z - w,
-  });
-  let dot = ({ x, y, z }, { x: u, y: v, z: w }) => x * u + y * v + z * w;
-  let scale = ({ x, y, z }, t) => ({ x: x * t, y: y * t, z: z * t });
-  let norm = (v) => scale(v, 1 / s(dot(v, v)));
-  let clamp = (t) => (t < 0 ? 0 : t);
+  let sub = (p1, p2) => ([ p1[0]-p2[0], p1[1]-p2[1], p1[2]-p2[2] ]);
+  let scale = (p, val) => ([ p[0]*val, p[1]*val, p[2]*val ]);
+  let norm = (vc) => scale(vc, 1/s(vc[0]*vc[0] + vc[1]*vc[1] + vc[2]*vc[2]));
 
-  let intersect = (sp, o, d) => {
-    let otc = sub(sp, o);
-    let v = dot(otc, d);
-    let t = sp.r - dot(otc, otc) + v * v;
+  let intersect = (sPh, obj, dir) => { // sPh is {pos: array, r: number}, obj is array, dir is array
+    let oC = sub(sPh.pos, obj); // obj is array, sPh.pos is array
+    let v = oC[0] * dir[0] + oC[1] * dir[1] + oC[2] * dir[2];
+    let t = sPh.r - (oC[0]*oC[0] + oC[1]*oC[1] + oC[2]*oC[2]) + v * v;
     return (
       t < 0 ? { t } : (t = v - s(t)),
-      (h = sub(o, scale(d, -t))),
+      (h = sub(obj, scale(dir, -t))), // h is an array
       {
-        t,
-        h,
-        n: sub(h, sp),
-        id: sp.r,
+        t, // number
+        h, // array
+        n: sub(h, sPh.pos), // n is an array
+        id: sPh.r, // number
       }
     );
   };
 
-  let draw = (ts) => {
-    sphere = {
-      x: z(angle + 1.5),
-      y: -0.75 + z(angle),
-      z: 5,
-      r: 1,
-    };
+  let draw = (t) => {
+    sp = { pos: [z(a+1.5), -0.75+z(a), 5], r:1 };
 
-    scenel = scale(
-      {
-        x: z(angle * 2 + 1.5),
-        y: -1,
-        z: z(angle * 2),
-      },
+    sl = scale( // sl is an array
+      [z(a*2+1.5),-1,z(a*2)],
       9
     );
 
     for (y = 256; y--; ) {
       for (x = 256; x--; ) {
-        let index = (x + y * 256) * 4;
-        c = scale(
-          trace(
-            {
-              x: 0,
-              y: 0,
-              z: 0,
-            },
-            norm({
-              x: x / 128 - 1,
-              y: y / 128 - 1,
-              z: 1,
-            })
+        let idx = (x + y * 256) * 4;
+        c = scale( // c is an array
+          trace( // trace call
+            [0,0,0], // origin (array)
+            norm([ // direction (array)
+              x / 128 - 1,
+              y / 128 - 1,
+              1,
+            ])
           ),
-          0.5 + 0.5 * (z(x / 85) * z(y / 85))
+          0.5 * (1 + z(x / 85) * z(y / 85)) // scale factor
         );
-        pixels[index] = c.x;
-        pixels[index + 1] = c.y;
-        pixels[index + 2] = c.z;
-        pixels[index + 3] = 255;
+        px[idx] = c[0];
+        px[idx + 1] = c[1];
+        px[idx + 2] = c[2];
+        px[idx + 3] = 255;
       }
     }
-    context.putImageData(imageData, 0, 0);
+    ct.putImageData(id, 0, 0);
 
-    angle += (ts - then) * 1e-3;
+    a += (t - th) * 1e-3;
 
-    then = ts;
+    th = t;
     requestAnimationFrame(draw);
   };
 
-  let compare2 = (a, b) => (a.t < 0 ? b : b.t < 0 ? a : a.t <= b.t ? a : b);
-
-  let trace = (origin, direction) => {
-    let hit = intersect(sphere, origin, direction);
-    for (i = 9; i--; )
-      hit = compare2(
-        hit,
-        intersect(
-          {
-            x: -4 + (i % 3) * 4,
-            y: 4 + z(angle + (i % 3) + i / 3),
-            z: 4 + (i / 3) * 4,
+  let trace = (og, dr) => { // og, dr are arrays
+    let ht = intersect(sp, og, dr); // sp is {pos, r}. intersect now expects sPh.pos
+    for (i = 9; i--; ) {
+      let new_hit = intersect( // intersect call
+          { // sPh (sphere-like object)
+            pos: [-4 + (i % 3) * 4, 4 + z(a + (i % 3) + i / 3), 4 + (i / 3) * 4],
             r: 5,
           },
-          origin,
-          direction
+          og, // obj (array)
+          dr // dir (array)
         )
       );
+      ht = ht.t < 0 ? new_hit : new_hit.t < 0 ? ht : ht.t <= new_hit.t ? ht : new_hit;
+    }
 
-    if (hit.t > 0) {
-      let { h, n } = hit;
-      let dirRay = norm(sub(scenel, h));
-      let { t } = intersect(sphere, h, dirRay);
-      t = t < -1 ? 1 : t < 0 ? 0.2 + 0.8 * -t : 0.2;
+    if (ht.t > 0) {
+      let { h, n } = ht; // h, n are arrays from intersect
+      let dRay = norm(sub(sl, h)); // sl is array, h is array. dRay is array.
+      let { t } = intersect(sp, h, dRay); // sp is {pos,r}, h is array, dRay is array
+      t = t < -1 ? 1 : t < 0 ? 0.2 - 0.8*t : 0.2;
 
       if (t < 1) {
-        let lightVector = norm(sub(scenel, sphere));
-        let focalAxisDist = dot(sub(h, sphere), lightVector);
-        let cOFDHP = sub(sub(sphere, scale(lightVector, -focalAxisDist)), h);
-        focalAxisDist -= 0.5;
-        let fad = focalAxisDist < 0 ? -focalAxisDist : focalAxisDist;
-        t += clamp(1 - s(dot(cOFDHP, cOFDHP))) ** fad * fad;
+        let lv = norm(sub(sl, sp.pos)); // sl array, sp.pos array. lv is array.
+        let _sub_h_sp = sub(h, sp.pos); // h array, sp.pos array. _sub_h_sp is array.
+        let fd = _sub_h_sp[0] * lv[0] + _sub_h_sp[1] * lv[1] + _sub_h_sp[2] * lv[2];
+        let cf = sub(sub(sp.pos, scale(lv, -fd)), h); // sp.pos array, lv array, h array. cf is array.
+        fd -= 0.5;
+        let fA = fd < 0 ? -fd : fd;
+        let _clampVal1 = 1 - s(cf[0]*cf[0] + cf[1]*cf[1] + cf[2]*cf[2]); t += (_clampVal1 < 0 ? 0 : _clampVal1) ** fA * fA;
       }
 
-      let col = scale(
-        { x: h.x + 5, y: 9, z: h.z + 5 },
-        clamp(dot(dirRay, n) * 12 * t)
+      let _clampVal2 = (dRay[0] * n[0] + dRay[1] * n[1] + dRay[2] * n[2]) * 12 * t;
+      let co = scale( // co is an array
+        [h[0] + 5, 9, h[2] + 5], // p (array)
+        (_clampVal2 < 0 ? 0 : _clampVal2) // val
       );
 
-      if (hit.id == 1) {
-        let cl = dot(n, direction);
-        col = sub(
-          col,
-          scale(trace(h, norm(sub(direction, scale(n, 2 * cl)))), -0.2)
+      if (ht.id == 1) { // ht not hit
+        let cL = n[0] * dr[0] + n[1] * dr[1] + n[2] * dr[2]; // n, dr are arrays
+        co = sub(
+          co,
+          scale(trace(h, norm(sub(dr, scale(n, 2 * cL)))), -0.2) // dr not direction
         );
 
         let nn = 2 / 3;
         let rr = sub(
-          scale(n, nn * -cl - s(1 - nn * nn * (1 - cl * cl))),
-          scale(direction, -nn)
+          scale(n, nn * -cL - s(1 - nn * nn * (1 - cL * cL))),
+          scale(dr, -nn) // dr not direction
         );
-        col = sub(col, scale(trace(sub(h, scale(rr, -0.1)), rr), -0.5));
+        co = sub(co, scale(trace(sub(h, scale(rr, -0.1)), rr), -0.5));
       }
 
-      return col;
+      return co;
     }
 
-    return {
-      x: 32 * direction.x + 192 - direction.y * 64,
-      y: 196 - direction.y * 64,
-      z: 255 - direction.y * 64,
+    return [ // dr is an array
+      32 * dr[0] + 192 - dr[1] * 64,
+      196 - dr[1] * 64,
+      255 - dr[1] * 64,
     };
   };
 
